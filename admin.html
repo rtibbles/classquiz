@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.0.1/vue.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <head>
+    <title>Class Quiz</title>
+  </head>
+  <body>
+  <div class="container" id="app">
+    <p>{{ numberOfStudents }} student{{ numberOfStudents === 1 ? '' : 's'}} connected</p>
+    <svg class="chart" width="420" height="150" aria-labelledby="title desc" role="img">
+      <ul>
+        <li v-for="(number, answer) in dataSummary">{{ answer }} - {{ number }}</li>
+      </ul>
+    <button class="btn btn-warning" v-on:click="nextQuestion">{{ btnText }}</button>
+  </div>
+  </body>
+  <script>
+    var socket = io('/admin-namespace');
+    var app = new Vue({
+      el: '#app',
+      created: function() {
+        socket.on('response', this.addResponse);
+        socket.on('email', this.addStudent);
+        socket.on('users', this.addManyStudents);
+      },
+      methods: {
+        addResponse: function(response) {
+          Vue.set(this.currentResponses, response.user_id, response.response);
+        },
+        addStudent: function(user) {
+          console.log(user);
+          Vue.set(this.students, user.email, user.id);
+        },
+        addManyStudents: function(users) {
+          var self = this;
+          Object.keys(users).forEach(function(key){
+            self.addStudent(users[key]);
+          });
+        },
+        nextQuestion: function() {
+          this.allResponses.push(this.currentResponses);
+          Vue.set(this, 'currentResponses', {});
+          socket.emit('new question');
+          this.started = true;
+        }
+      },
+      data: {
+        currentResponses: {},
+        students: {},
+        allResponses: [],
+        started: false
+      },
+      computed: {
+        numberOfStudents: function() {
+          return Object.keys(this.students).length;
+        },
+        btnText: function() {
+          return this.started ? "Next Question" : "Start Quiz";
+        },
+        dataSummary: function() {
+          var data = {};
+          var self = this;
+          Object.keys(this.currentResponses).forEach(function(key){
+            var answer = self.currentResponses[key];
+            if (data[answer]) {
+              data[answer] += 1;
+            } else {
+              data[answer] = 1;
+            }
+          });
+          return data;
+        }
+      }
+    });
+  </script>
+</html>
