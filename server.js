@@ -26,7 +26,7 @@ classNameSpace.on('connection', function(socket){
   socket.on('response', function(response){
     adminNameSpace.emit('response', {
       response: response,
-      user_id: user.id
+      email: user.email
     });
   });
   socket.on('email', function(email){

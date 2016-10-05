@@ -14,6 +14,7 @@
         <li v-for="(number, answer) in dataSummary">{{ answer }} - {{ number }}</li>
       </ul>
     <button class="btn btn-warning" v-on:click="nextQuestion">{{ btnText }}</button>
+    <button class="btn btn-success" v-on:click="downloadCSV">Download CSV</button>
   </div>
   </body>
   <script>
@@ -27,10 +28,9 @@
       },
       methods: {
         addResponse: function(response) {
-          Vue.set(this.currentResponses, response.user_id, response.response);
+          Vue.set(this.currentResponses, response.email, response.response);
         },
         addStudent: function(user) {
-          console.log(user);
           Vue.set(this.students, user.email, user.id);
         },
         addManyStudents: function(users) {
@@ -40,10 +40,31 @@
           });
         },
         nextQuestion: function() {
-          this.allResponses.push(this.currentResponses);
+          if (this.started) {
+            this.allResponses.push(this.currentResponses);
+          }
           Vue.set(this, 'currentResponses', {});
           socket.emit('new question');
           this.started = true;
+        },
+        downloadCSV: function() {
+          var responses = this.allResponses.concat(this.currentResponses);
+          var allEmails = {};
+          responses.forEach(function(obj){
+            Object.keys(obj).forEach(function(key){
+              if (allEmails[key]) {
+                allEmails[key] += 1;
+              } else {
+                allEmails[key] = 1;
+              }
+            });
+          });
+          var csvContent = "data:text/csv;charset=utf-8,";
+          Object.keys(allEmails).forEach(function(key){
+            csvContent += key + "," + allEmails[key] + "\n"
+          });
+          var encodedUri = encodeURI(csvContent);
+          window.open(encodedUri);
         }
       },
       data: {
