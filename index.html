@@ -19,9 +19,9 @@
       </div>
     </div>
     <div class="input-group" v-bind:class="{ 'has-error': error }" v-else>
-      <span class="input-group-addon">UCSD Email</span>
-      <input type="text" class="form-control" name="email" v-model="emailTemp" placeholder="abc123@ucsd.edu"></input>
-      <span class="input-group-addon" v-if="error">Enter a valid UCSD Email Address</span>
+      <span class="input-group-addon">Learning Equality Email</span>
+      <input type="text" class="form-control" name="email" v-model="emailTemp" placeholder="abc123@learningequality.org"></input>
+      <span class="input-group-addon" v-if="error">Enter a valid Learning Equality Email Address</span>
       <span class="input-group-btn">
         <button class="btn btn-success" v-on:click="submitEmail">Submit Email</button>
       </span>
@@ -62,7 +62,7 @@
       },
       computed: {
         emailValid: function() {
-          return this.emailTemp.slice(-9) === "@ucsd.edu";
+          return this.emailTemp.endsWith("@learningequality.org)";
         }
       }
     });
